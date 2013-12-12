@@ -1,0 +1,104 @@
+\documentclass[a4paper]{report} \usepackage[utf8]{inputenc}
+\usepackage{lmodern} \usepackage[T1]{fontenc} \usepackage{cite}
+\usepackage{listings} \usepackage{color}
+
+
+
+%Mise en page Numerotation
+\renewcommand\thesection{\Roman{section}}
+\renewcommand\thesubsection{\arabic{subsection}}
+\renewcommand\thesubsubsection{\alph{subsubsection}}
+
+%Page de titre
+\title{\bf Rapport du projet de Compilation : troisième partie}
+\author{\bf Dimitri Le Toriellec et Remy El-Sibaïe} \date{\today}
+
+
+%Begin - Content
+\begin{document}
+
+%génère le titre
+	\maketitle 
+
+\lstset{language=Caml,basicstyle=\small,captionpos=b,linewidth=175mm,
+breaklines=true,
+commentstyle=\color{green},stringstyle=\color{red},identifierstyle=\ttfamily,
+keywordstyle=\color{blue}}
+
+
+
+\section*{Introduction}
+
+
+La dernière partie de ce projet consiste à utiliser les outils des phases précédentes pour générer le code MIPS à partir d’un AST typé. 
+
+
+\section{Choix et problèmes}
+
+Dans le travail réaliser nous avons fait un choix par rapport à l’énoncé dans la position des variables locales en mémoire. Toutes les variables locales sont alignées sur 4 octets, même les char. 
+        Une partie du travail n’est pas arrivé à terme. Effectivement, nous n’avons pas pu terminer l’implémentation et la génération de code pour les structures. Tout appel à l’opérateur “.”, l’assignation ou le retour de fonction comprenant des structures ne fonctionne donc pas.
+
+
+
+\subsection{Calcule de la taille des structures et unions}
+
+
+Pour une structure, il faut calculer la taille de chaque variable, 1 octet pour un caractère et 4 pour un entier. La difficulté résidait dans la gestion de l'alignement. Car pour les entiers, il était nécessaire de s’assurer que l'alignement correspondait bien à un multiple de 4. Il faut calculer récursivement la taille d’une structure, puisque que ces dernières peuvent être imbriquées. La taille d’une structure est la somme des tailles de chaque variable sans oublier le décalage due à l’alignement de chaque champ. Sans oublier, bien sûr, que l’alignement de la structure elle-même dépend du plus grand alignement  parmis ses champs. 
+
+
+
+\subsection{Renommage de manière unique des identifiants}
+
+
+Le rennomage consiste simplement à modifier le fichier typing.ml ou alors parcourir à nouveau l’AST dans un module Rename (méthode adoptée) pour changer chaque nom de définition ou d’utilisation de variable en fonction de sa portée. Il suffit d’utiliser un environnement global et local pour déterminer à chaque variable où elle a été définie. De cette manière, on manipule des identifiants unique pendant la génération de code.
+
+
+
+\subsection{La fonction memcpy}
+La fonction memcpy permet de copier une donnée sur la pile d’un emplacement B à un emplacement A. Cette fonction est codée uniquement en OCaml et n’est pas une fonction MIPS. Elle génère précisément le bon nombre de chargement et enregistrement en mémoire (soit de mot, soit d’octet) pour copier de B à A. Avant d’executer memcpy, la règle est que l’addresse de départ se trouve dans $t0 et l’addresse d’arrivée dans $t1. 
+
+
+
+\subsection{Instruction}
+
+\subsubsection{Boucles}
+
+Il y a deux types de boucles vu ici , la première est la boucle “while” et la seconde est la boucle “for”. 
+Pour la boucle “while”, nous avons fait de légère modification au cours de notre programmation. Au lieu d’utiliser un algorithme intuitif, nous avons utilisé un algorithme du “while” vu en cour , ainsi nous faisons seulement un seul branchement par tour de boucle.
+Ensuite, concernant la boucle “for” à la différence du “while”, nous testons la condition “faux”(égale à 0) au lieu de la condition “vrai”(différent de 0) .
+  
+\subsubsection{Return}
+Le return consiste simplement à sauter jusqu’au label de fin de fonction (unique pour chaque fonction), juste après avoir copié grace à memcpy l’expression contenue dans le return dans la case mémoire allouée pour la valeur de retour. 
+
+\subsection{Expression}
+
+
+La génération du code des expressions comporte de nombreuses subtilités. Ici, nous n’en citeront que quelque unes.Les opérateurs ne sont pas non plus évidents au premier abord : l’execution paresseuse des opérateurs logique, et l’arithmétique de pointeur demandent un minimum de réfléxion. C’est surement ce qui nous a causé le plus de problème avec l’appel de fonction et l’assgnation (à cause de memcpy)
+
+\subsection{Fonction}
+
+
+L’appel de fonction devait respecter les conventions d’appel choisient précédement. La personne qui réalisait cette partie devait réaliser en parallèle la définition de fonction et l’instruction return. Nous avons choisis une mise en place qui correspondait à celle conseillée par chargé de cours.  
+
+\section{Test effectués}
+Les tests effectués se sont fait à partir de ceux fournis sur le site de Kim Nguyen, et grâce à l’utilisation d’un script (effectue un diff entre le .out fournit et celui généré par nous). Ceci correspondait plus à des tests de non regression. Durant l’écriture du programme, nous avons fait évoluer le fichier test.c, avec du code le plus court possible pour cibler l’erreur et éviter d’avoir un code mips pollué, difficile à parcourir et à débuger.
+
+\section{Répartition du travail}
+Le calcul de la taille de la structure et l’union a été réalisé à deux. La génération du code des expressions, le renommage unique, les fonctions, la gestion de sbrk, et le return ont été écrit par Rémy. La génération de code des instructions a été réalisée par Dimitri. Bien entendu, ces différentes fonctions ont demandé plusieurs modifications sur lesquels nous avons travaillé en binôme pendant les séances de projet.
+
+
+\section*{Conclusion}
+Lors de la réalisation de cet arbre nous n’avons pas rencontré
+de réelles difficultés mais plutôt quelques réflexions sur les
+procédures à suivre. Effectivement cette partie exigeait de faire
+certains choix d'implémentation et correspondait à un bon morceau de
+OCaml, contrairement à la première partie. Mais finalement, la tâche
+était, d'une manière générale, l'application des règles de typage données
+dans le sujet.
+
+
+
+
+
+\end{document}
+
